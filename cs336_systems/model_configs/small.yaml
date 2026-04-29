@@ -1,0 +1,6 @@
+model:
+  model_type: "small"
+  d_model: 768
+  d_ff: 3072
+  num_layers: 12
+  num_heads: 12

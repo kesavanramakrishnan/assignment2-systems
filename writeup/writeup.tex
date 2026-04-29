@@ -1,0 +1,529 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath, amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{parskip}
+\usepackage{placeins}
+\usepackage{float}
+\usepackage{hyperref}
+\usepackage{seqsplit}
+
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    urlcolor=blue,
+}
+
+\setlength{\parskip}{0.6em}
+
+\title{CS336 Assignment 2: Systems and Parallelism}
+\author{Kesavan Ramakrishnan}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+
+\section{Profiling and Benchmarking}
+
+
+\subsection{Problem (\texttt{benchmarking\_script})}
+
+\subsubsection*{(b) Timings across model sizes}
+
+\begin{table}[H]
+\centering
+\caption{Forward, backward, and optimizer-step timings (ms, mean $\pm$ std over 10 iters, 5 warmup) on B200 in FP32.}
+\begin{tabular}{lrrr}
+\toprule
+ size & forward & backward & optim \\
+\midrule
+small & 16.86 $\pm$ 0.04 & 32.12 $\pm$ 0.02 & 7.63 $\pm$ 0.02 \\
+medium & 47.80 $\pm$ 0.13 & 92.78 $\pm$ 0.09 & 17.14 $\pm$ 0.12 \\
+large & 106.85 $\pm$ 0.06 & 208.42 $\pm$ 0.18 & 30.53 $\pm$ 0.14 \\
+xl & 305.85 $\pm$ 0.14 & 571.76 $\pm$ 0.39 & 80.32 $\pm$ 0.16 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+Variability across runs isn't very high, the standard deviation is low and numbers are pretty stable.
+
+\vspace{4em}
+
+\subsubsection*{(c) Effect of warm-up steps}
+
+\begin{table}[H]
+\centering
+\caption{\textbf{No Warmup}: Forward, backward, and optimizer-step timings (ms, mean $\pm$ std over 10 iters, 5 warmup).}
+\begin{tabular}{lrrr}
+\toprule
+ size & forward & backward & optim \\
+\midrule
+small & 33.98 $\pm$ 51.47 & 35.51 $\pm$ 10.47 & 7.87 $\pm$ 0.13 \\
+medium & 47.91 $\pm$ 0.84 & 92.57 $\pm$ 0.11 & 16.66 $\pm$ 0.11 \\
+large & 109.19 $\pm$ 8.00 & 208.14 $\pm$ 0.39 & 29.86 $\pm$ 0.20 \\
+xl & 317.26 $\pm$ 69.70 & 570.19 $\pm$ 0.55 & 79.74 $\pm$ 0.23 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{\textbf{2 iter Warmup}:Forward, backward, and optimizer-step timings (ms, mean $\pm$ std over 10 iters, 5 warmup) on B200 in FP32.}
+\label{tab:bench_b}
+\begin{tabular}{lrrr}
+\toprule
+ & forward & backward & optim \\
+size &  &  &  \\
+\midrule
+small & 16.74 $\pm$ 0.08 & 32.02 $\pm$ 0.03 & 7.32 $\pm$ 0.03 \\
+medium & 47.50 $\pm$ 0.05 & 92.41 $\pm$ 0.04 & 16.51 $\pm$ 0.04 \\
+large & 106.50 $\pm$ 0.06 & 207.61 $\pm$ 0.09 & 29.87 $\pm$ 0.18 \\
+xl & 295.88 $\pm$ 0.23 & 569.12 $\pm$ 0.13 & 80.85 $\pm$ 0.10 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+With no warmup steps the results are much noisier because the GPU has to warmup and there are latencies that come up from compiling the kernels, kernel setup, etc, making the first runs much longer. 
+As we can see, with no warmup the reported latencies are much higher and have much more variability, but as soon as even 2 warmups are used, the numbers return to normal.
+
+\vspace{4em}
+
+
+\subsection{Problem (\texttt{nsys\_profile})}
+
+\begin{table}[H]
+\centering
+\caption{Nsight Systems profiling configurations.}
+\begin{tabular}{lrrl}
+\toprule
+model size & context length & batch size & profiled mode \\
+\midrule
+small & 256 & 4 & train \\
+small & 1024 & 4 & train \\
+small & 2048 & 4 & train \\
+large & 256 & 4 & train \\
+large & 1024 & 4 & train \\
+large & 2048 & 4 & train \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection*{(a) Total forward pass time vs. Python timing}
+
+\begin{table}[H]
+\centering
+\footnotesize
+\caption{Forward-pass runtime from Nsight Systems compared with Python timing.}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lrrr}
+\toprule
+profile & nsys fwd (ms) & Python fwd (ms) & difference \\
+\midrule
+small, ctx 256 & 8.634 & 10.17 & 1.536 \\
+small, ctx 1024 & 16.880 & 37.46 & 20.58 \\
+small, ctx 2048 & 18.582 & 90.62 & 72.038 \\
+large, ctx 256 & 48.389 & 62.58 & 14.191 \\
+large, ctx 1024 & 103.621 & 229.86 & 126.239 \\
+large, ctx 2048 & 323.612 & 521.60 & 197.988 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The numbers do not align but this makes sense because the nsys NVTX forward range times the CPU queue window and so it doesn't wait for all the kernels to finish.
+However, for python side timing, I include a torch.cuda.synchronize() after the forward call and then end timing, which means the Python side timing measures the total kernel time, which is why the python side timing is higher than the nsys one.
+
+\subsubsection*{(b) Most expensive CUDA kernel in the forward pass}
+
+\begin{table}[H]
+\centering
+\scriptsize
+\caption{CUDA kernels with the largest cumulative GPU time.}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lp{0.24\textwidth}rp{0.24\textwidth}r}
+\toprule
+profile & dominant fwd kernel & fwd calls & dominant full-step kernel & full-step calls \\
+\midrule
+small, ctx 256 & \texttt{\seqsplit{cutlass3x\_sm100\_sgemm\_64x64x16\_tnn\_relu}} & 24 & \texttt{\seqsplit{cutlass3x\_sm100\_sgemm\_128x64x16\_nnn\_relu}} & 72 \\
+small, ctx 1024 & \texttt{\seqsplit{cutlass3x\_sm100\_sgemm\_64x64x16\_tnn\_relu}} & 28 & \texttt{\seqsplit{cutlass3x\_sm100\_sgemm\_64x64x16\_tnn\_relu}} & 28 \\
+small, ctx 2048 & \texttt{\seqsplit{cutlass3x\_sm100\_sgemm\_128x128x16\_tnn\_relu}} & 7 & \texttt{\seqsplit{cutlass3x\_sm100\_sgemm\_128x128x16\_tnn\_relu}} & 39 \\
+large, ctx 256 & \texttt{\seqsplit{cutlass3x\_sm100\_sgemm\_64x32x16\_tnn\_relu}} & 139 & \texttt{\seqsplit{cutlass3x\_sm100\_sgemm\_64x32x16\_nnn\_relu}} & 223 \\
+large, ctx 1024 & \texttt{\seqsplit{cutlass3x\_sm100\_sgemm\_128x128x16\_tnn\_relu}} & 49 & \texttt{\seqsplit{cutlass3x\_sm100\_sgemm\_64x64x16\_ntn\_relu}} & 212 \\
+large, ctx 2048 & \texttt{\seqsplit{cutlass3x\_sm100\_sgemm\_128x128x16\_tnn\_relu}} & 49 & \texttt{\seqsplit{cutlass3x\_sm100\_sgemm\_128x128x16\_tnn\_relu}} & 135 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The dominant forward-pass CUDA kernels are all CUTLASS SGEMM kernels. For the shorter-context cases this is a matmul that comes from attention, while the longer-context / larger-model creates wider FFN-shaped GEMMs. 
+The dominant full forward+backward kernel is sometimes the same tile as the forward pass, which indicates that a backward GEMM such as a weight-gradient or activation-gradient matmul is taking the most cumulative GPU time.
+
+
+\subsubsection*{(c) Non-matmul kernels with non-trivial runtime}
+
+\begin{table}[H]
+\centering
+\scriptsize
+\caption{Non-matmul CUDA kernels with non-trivial forward-pass runtime.}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lp{0.34\textwidth}p{0.31\textwidth}}
+\toprule
+profile & non-matmul kernels observed & likely component \\
+\midrule
+small, ctx 256 & \texttt{\seqsplit{aten\_elementwise\_div}} & attention + FFN elementwise kernels \\
+small, ctx 1024 & \texttt{\seqsplit{aten\_elementwise\_div}} & attention + FFN elementwise kernels \\
+small, ctx 2048 & \texttt{\seqsplit{aten\_elementwise\_div}} & attention + FFN elementwise kernels \\
+large, ctx 256 & \texttt{\seqsplit{aten\_elementwise\_div}} & attention + FFN elementwise kernels \\
+large, ctx 1024 & \texttt{\seqsplit{aten\_elementwise\_div}} & attention + FFN elementwise kernels \\
+large, ctx 2048 & \texttt{\seqsplit{aten\_elementwise\_div}} & attention + FFN elementwise kernels \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+For the forward pass there were a lot of elementwise kernels throughout that came from the attn and ffn operations.
+
+
+\subsubsection*{(d) Full training step vs. inference fraction breakdown}
+
+\begin{table}[H]
+\centering
+\scriptsize
+\caption{CUDA runtime fraction by kernel category for inference and full training steps.}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{llrrrr}
+\toprule
+category & mode & matmul & elementwise / optim & reductions / softmax & movement / indexing \\
+\midrule
+small, ctx 256 & forward & 78.3\% & 13.9\% & 4.2\% & 3.2\% \\
+small, ctx 256 & train & 64.2\% & 26.7\% & 3.6\% & 5.0\% \\
+small, ctx 1024 & forward & 66.0\% & 24.6\% & 7.0\% & 2.1\% \\
+small, ctx 1024 & train & 64.8\% & 28.9\% & 3.8\% & 2.3\% \\
+small, ctx 2048 & forward & 56.1\% & 31.8\% & 8.0\% & 1.7\% \\
+small, ctx 2048 & train & 56.8\% & 36.9\% & 4.4\% & 1.5\% \\
+large, ctx 256 & forward & 87.0\% & 8.6\% & 2.5\% & 1.9\% \\
+large, ctx 256 & train & 73.5\% & 20.7\% & 2.5\% & 4.1\% \\
+large, ctx 1024 & forward & 76.7\% & 17.7\% & 4.5\% & 1.4\% \\
+large, ctx 1024 & train & 73.0\% & 21.5\% & 2.6\% & 2.5\% \\
+large, ctx 2048 & forward & 66.2\% & 24.8\% & 6.6\% & 1.2\% \\
+large, ctx 2048 & train & 61.0\% & 33.3\% & 3.9\% & 1.8\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Categories: matmul is the CUTLASS SGEMM kernels; elementwise/optim includes add, multiply, divide, sigmoid, pow, sqrt, fill, and AdamW-style vectorized kernels; reductions/softmax comes from reduce max/sum/mean, exp/log, rsqrt, and softmax-related kernels; movement/indexing includes cat/copy, arange, scatter/gather, and indexing kernels.
+
+Generally in comparison to just the forward pass, the full train step is still dominated by matmuls but elementwise and optimizer ops take up a larger percentage in the full train step, making the matmul a smaller percent than in the forward.
+
+\subsubsection*{(e) Softmax vs. matmul runtime within self-attention}
+
+\begin{table}[H]
+\centering
+\scriptsize
+\caption{Runtime comparison of softmax and matrix multiplication inside self-attention.}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lrrrrrr}
+\toprule
+profile & softmax (ms) & mask (ms) & scores matmul (ms) & output matmul (ms) & matmul total (ms) & softmax/matmul \\
+\midrule
+small, ctx 256 & 1.120 & 0.563 & 1.011 & 0.904 & 1.915 & 0.58 \\
+small, ctx 1024 & 1.138 & 0.586 & 1.029 & 0.953 & 1.982 & 0.57 \\
+small, ctx 2048 & 1.172 & 0.575 & 1.010 & 0.933 & 1.943 & 0.60 \\
+large, ctx 256 & 1.858 & 0.904 & 1.647 & 1.555 & 3.202 & 0.58 \\
+large, ctx 1024 & 28.851 & 13.033 & 1.692 & 1.629 & 3.321 & 8.69 \\
+large, ctx 2048 & 56.977 & 27.134 & 1.781 & 1.681 & 3.462 & 16.46 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Comparing the softmax to the total time for matmuls, we see that the softmax takes a significant amount of time especially at a bigger model size and longer context length where it dominates. 
+Softmax FLOPs is O(n) while matmul FLOPs is O($n^3$) which shows that softmax takes significantly more time than difference in FLOPs.
+
+\subsection{Problem (\texttt{mixed\_precision\_accumulation})}
+
+When accumulating in a lower precision (f16), we see that the output of the function is 9.9531 which is inaccurate.
+However, when doing computation in fp32, the value is precise, and when doing an fp16 operation but accumulating in fp32,
+so you can operate in a lower precision, accuracy is still recovered (10.0021 vs 10.0001), showing that accumulating in a higher
+precision preserves accuracy even if the operation is done in a lower precision.s
+
+\vspace{4em}
+
+
+\subsection{Problem (\texttt{benchmarking\_mixed\_precision})}
+
+\subsubsection*{(a) Data types under autocast (FP16)}
+
+Model parameters dtype: fp32
+Output of first feed-forward: fp16
+Output of layer norm: fp32
+Model's logits: fp16
+Loss: fp32
+Gradients: fp32
+
+\subsubsection*{(b) Layer norm sensitivity in mixed precision}
+
+With fp16 mixed precision, the layer norm is done in fp32 because the layer norm calculates the mean and variance of a set of values, which can become a big value that can't be stored in fp16, making it sensitive.
+If we were to do it in bf16 this would be better since we can represent the range of fp32, but we then lose precision because we have less mantissa bits, meaning it will be less accurate.
+\subsubsection*{(c) BF16 mixed precision benchmarking}
+
+\begin{table}[H]
+\centering
+\small
+\caption{FP32 versus BF16 mixed-precision timing by model size.}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lrrrr}
+\toprule
+size & FP32 fwd (ms) & BF16 fwd (ms) & FP32 bwd (ms) & BF16 bwd (ms) \\
+\midrule
+small & 16.63 & 8.03 & 31.80 & 13.50 \\
+medium & 47.20 & 16.53 & 91.86 & 31.98 \\
+large & 105.91 & 29.76 & 206.26 & 59.01 \\
+xl & 291.92 & 47.16 & 567.16 & 104.68 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Mixed-precision speedup relative to FP32.}
+\begin{tabular}{lrr}
+\toprule
+size & forward speedup & backward speedup \\
+\midrule
+small & 2.07$\times$ & 2.36$\times$ \\
+medium & 2.86$\times$ & 2.87$\times$ \\
+large & 3.56$\times$ & 3.50$\times$ \\
+xl & 6.19$\times$ & 5.42$\times$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+From looking at the table we see that operating in bf16 results in significantly lower runtimes for both the fwd and bwd passes.
+On top of that, as model size grows we can see that speedups become even more pronounced.
+
+\subsection{Problem (\texttt{memory\_profiling})}
+
+\subsubsection*{(a) Memory timeline screenshots}
+
+\vspace{4em}
+
+\subsubsection*{(b) Peak memory per context length}
+
+\vspace{4em}
+
+\subsubsection*{(c) Peak memory under mixed precision}
+
+\vspace{4em}
+
+\subsubsection*{(d) Size of an XL residual-stream activation tensor}
+
+\vspace{4em}
+
+\subsubsection*{(e) Largest allocations in the active memory timeline}
+
+\vspace{4em}
+
+\subsubsection*{(f) Memory per TransformerBlock saved for backward}
+
+\vspace{4em}
+
+\newpage
+
+
+\section{Single-GPU Memory}
+
+
+\subsection{Problem (\texttt{gradient\_checkpointing})}
+
+\subsubsection*{(a) Memory-optimal checkpointing strategy}
+
+\vspace{6em}
+
+\subsubsection*{(b) Best one-step recomputation strategy for XL}
+
+\vspace{6em}
+
+\newpage
+
+
+\section{GPU Kernels: FlashAttention-2}
+
+
+\subsection{Problem (\texttt{pytorch\_attention})}
+
+\vspace{6em}
+
+
+\subsection{Problem (\texttt{torch\_compile})}
+
+\subsubsection*{(a) Compiled vs. uncompiled attention}
+
+\vspace{4em}
+
+\subsubsection*{(b) Compiled vs. uncompiled full Transformer}
+
+\vspace{4em}
+
+
+\subsection{Problem (\texttt{flash\_benchmarking})}
+
+\vspace{6em}
+
+\newpage
+
+
+\section{Distributed Data Parallel Training}
+
+
+\subsection{Problem (\texttt{distributed\_communication\_single\_node})}
+
+\vspace{6em}
+
+
+\subsection{Problem (\texttt{naive\_ddp\_benchmarking})}
+
+\vspace{6em}
+
+
+\subsection{Problem (\texttt{minimal\_ddp\_flat\_benchmarking})}
+
+\vspace{6em}
+
+
+\subsection{Problem (\texttt{ddp\_overlap\_individual\_parameters\_benchmarking})}
+
+\subsubsection*{(a) Time per training iteration with overlap}
+
+\vspace{4em}
+
+\subsubsection*{(b) Nsight comparison screenshots}
+
+\vspace{4em}
+
+\newpage
+
+
+\section{Optimizer State Sharding}
+
+
+\subsection{Problem (\texttt{optimizer\_state\_sharding\_accounting})}
+
+\subsubsection*{(a) Peak memory with vs. without sharding}
+
+\vspace{4em}
+
+\subsubsection*{(b) Effect of sharding on training speed}
+
+\vspace{4em}
+
+\subsubsection*{(c) Comparison to ZeRO stage 1}
+
+\vspace{4em}
+
+\newpage
+
+
+\section{Fully-Sharded Data Parallel}
+
+
+\subsection{Problem (\texttt{fsdp\_accounting})}
+
+\subsubsection*{(a) Expected memory savings from FSDP}
+
+\vspace{4em}
+
+\subsubsection*{(b) All-gather overlap with the forward pass}
+
+\vspace{4em}
+
+\newpage
+
+
+\section{Analyzing Parallelism Strategies}
+
+
+\subsection{Problem (\texttt{alternate\_ring\_all\_reduce})}
+
+\vspace{6em}
+
+
+\subsection{Problem (\texttt{data\_parallel\_calcs})}
+
+\subsubsection*{(a) Backward FLOPs with $N_{\text{DP}}$}
+
+\vspace{4em}
+
+\subsubsection*{(b) Backward communication time with $N_{\text{DP}}$}
+
+\vspace{4em}
+
+\subsubsection*{(c) Maximum $N_{\text{DP}}$ before bottleneck}
+
+\vspace{4em}
+
+
+\subsection{Problem (\texttt{fsdp\_calcs})}
+
+\subsubsection*{(a) FLOPs for forward and backward}
+
+\vspace{4em}
+
+\subsubsection*{(b) Communication time for forward and backward}
+
+\vspace{4em}
+
+\subsubsection*{(c) Maximum $N_{\text{FSDP}}$ before bottleneck}
+
+\vspace{4em}
+
+
+\subsection{Problem (\texttt{tp\_calcs})}
+
+\subsubsection*{(a) Backward pass equations for TP}
+
+\vspace{4em}
+
+\subsubsection*{(b) FLOPs for forward and backward with $N_{\text{TP}}$}
+
+\vspace{4em}
+
+\subsubsection*{(c) Communication time for forward and backward}
+
+\vspace{4em}
+
+\subsubsection*{(d) Maximum $N_{\text{TP}}$ before bottleneck}
+
+\vspace{4em}
+
+
+\subsection{Problem (\texttt{fsdp\_tp\_calcs})}
+
+\subsubsection*{(a) Forward FLOPs for FSDP + TP}
+
+\vspace{4em}
+
+\subsubsection*{(b) Forward communication time (overlapping axes)}
+
+\vspace{4em}
+
+\subsubsection*{(c) Maximum $N$ with overlap}
+
+\vspace{4em}
+
+\subsubsection*{(d) Maximum $N$ without overlap}
+
+\vspace{4em}
+
+\newpage
+
+
+\section{Leaderboard}
+
+
+\subsection{Problem (\texttt{leaderboard})}
+
+\vspace{6em}
+
+\end{document}

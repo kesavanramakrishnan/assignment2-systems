@@ -12,6 +12,7 @@ import torch.nn as nn
 from einops import einsum, rearrange
 from jaxtyping import Bool, Float, Int
 from torch import Tensor
+import torch.cuda.nvtx as nvtx
 
 from cs336_basics.nn_utils import softmax
 
@@ -330,7 +331,6 @@ class BasicsTransformerLM(nn.Module):
         model.load_state_dict(state_dict)
         return model
 
-
 class TransformerBlock(nn.Module):
     """A single Transformer layer.
 
@@ -378,7 +378,7 @@ class TransformerBlock(nn.Module):
         """
         # NOTE: this is a pre-norm Transformer, and differs from the original
         # description in the paper.
-        # Apply the multi-head self-attention sublayer
+        # Apply the multi-head self-attention sublayer            
         x_attn = self.attn(self.ln1(x))
         attn_sublayer_output = x + x_attn
 

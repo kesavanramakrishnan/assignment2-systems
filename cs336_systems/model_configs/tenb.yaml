@@ -1,0 +1,6 @@
+model:
+  model_type: "10b"
+  d_model: 4608
+  d_ff: 10240
+  num_layers: 50
+  num_heads: 36

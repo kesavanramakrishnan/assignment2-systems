@@ -1,0 +1,6 @@
+model:
+  model_type: "medium"
+  d_model: 1024
+  d_ff: 4096
+  num_layers: 24
+  num_heads: 16
