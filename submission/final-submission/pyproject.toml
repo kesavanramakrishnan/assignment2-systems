@@ -1,0 +1,21 @@
+[project]
+name = "cs336-leaderboard-safe"
+version = "0.1.0"
+description = "CS336 leaderboard safe submission"
+readme = "README.md"
+requires-python = ">=3.12,<3.14"
+dependencies = [
+    "modal>=1.4.1",
+]
+
+[build-system]
+requires = ["uv_build>=0.11.6,<0.12"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "main"
+module-root = ""
+
+[tool.uv]
+package = false
+python-preference = "managed"

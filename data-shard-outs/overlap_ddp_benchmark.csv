@@ -1,0 +1,2 @@
+size,ddp_type,world_size,node_count,gpus_per_node,batch_per_rank,global_batch,ctx_length,warmup,iters,step_mean_ms,step_std_ms,comm_mean_ms,comm_std_ms,comm_frac,peak_memory_mib
+xl,overlap,2,1,2,1,2,512,5,10,380.0985652007512,0.905662836019688,1.1251671006903052,0.27918603719888124,0.0029601982319929095,52649.7978515625

@@ -2,45 +2,68 @@
 \providecommand\hyper@newdestlabel[2]{}
 \providecommand\HyField@AuxAddToFields[1]{}
 \providecommand\HyField@AuxAddToCoFields[2]{}
-\@writefile{toc}{\contentsline {section}{\numberline {1}Profiling and Benchmarking}{1}{section.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {1.1}Problem (\texttt  {benchmarking\_script})}{1}{subsection.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {2}Profiling and Benchmarking}{1}{section.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Problem (\texttt  {benchmarking\_script})}{1}{subsection.2.1}\protected@file@percent }
 \@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Forward, backward, and optimizer-step timings (ms, mean $\pm $ std over 10 iters, 5 warmup) on B200 in FP32.}}{1}{table.1}\protected@file@percent }
 \@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces \textbf  {No Warmup}: Forward, backward, and optimizer-step timings (ms, mean $\pm $ std over 10 iters, 5 warmup).}}{1}{table.2}\protected@file@percent }
 \@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces \textbf  {2 iter Warmup}:Forward, backward, and optimizer-step timings (ms, mean $\pm $ std over 10 iters, 5 warmup) on B200 in FP32.}}{2}{table.3}\protected@file@percent }
 \newlabel{tab:bench_b}{{3}{2}{\textbf {2 iter Warmup}:Forward, backward, and optimizer-step timings (ms, mean $\pm $ std over 10 iters, 5 warmup) on B200 in FP32}{table.3}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {1.2}Problem (\texttt  {nsys\_profile})}{2}{subsection.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Problem (\texttt  {nsys\_profile})}{2}{subsection.2.2}\protected@file@percent }
 \@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces Nsight Systems profiling configurations.}}{2}{table.4}\protected@file@percent }
 \@writefile{lot}{\contentsline {table}{\numberline {5}{\ignorespaces Forward-pass runtime from Nsight Systems compared with Python timing.}}{2}{table.5}\protected@file@percent }
 \@writefile{lot}{\contentsline {table}{\numberline {6}{\ignorespaces CUDA kernels with the largest cumulative GPU time.}}{3}{table.6}\protected@file@percent }
 \@writefile{lot}{\contentsline {table}{\numberline {7}{\ignorespaces Non-matmul CUDA kernels with non-trivial forward-pass runtime.}}{3}{table.7}\protected@file@percent }
 \@writefile{lot}{\contentsline {table}{\numberline {8}{\ignorespaces CUDA runtime fraction by kernel category for inference and full training steps.}}{4}{table.8}\protected@file@percent }
 \@writefile{lot}{\contentsline {table}{\numberline {9}{\ignorespaces Runtime comparison of softmax and matrix multiplication inside self-attention.}}{4}{table.9}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {1.3}Problem (\texttt  {mixed\_precision\_accumulation})}{4}{subsection.1.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {1.4}Problem (\texttt  {benchmarking\_mixed\_precision})}{5}{subsection.1.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.3}Problem (\texttt  {mixed\_precision\_accumulation})}{4}{subsection.2.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.4}Problem (\texttt  {benchmarking\_mixed\_precision})}{5}{subsection.2.4}\protected@file@percent }
 \@writefile{lot}{\contentsline {table}{\numberline {10}{\ignorespaces FP32 versus BF16 mixed-precision timing by model size.}}{5}{table.10}\protected@file@percent }
 \@writefile{lot}{\contentsline {table}{\numberline {11}{\ignorespaces Mixed-precision speedup relative to FP32.}}{5}{table.11}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {1.5}Problem (\texttt  {memory\_profiling})}{6}{subsection.1.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {2}Single-GPU Memory}{7}{section.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Problem (\texttt  {gradient\_checkpointing})}{7}{subsection.2.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {3}GPU Kernels: FlashAttention-2}{8}{section.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Problem (\texttt  {pytorch\_attention})}{8}{subsection.3.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Problem (\texttt  {torch\_compile})}{8}{subsection.3.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Problem (\texttt  {flash\_benchmarking})}{8}{subsection.3.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {4}Distributed Data Parallel Training}{9}{section.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Problem (\texttt  {distributed\_communication\_single\_node})}{9}{subsection.4.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Problem (\texttt  {naive\_ddp\_benchmarking})}{9}{subsection.4.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Problem (\texttt  {minimal\_ddp\_flat\_benchmarking})}{9}{subsection.4.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Problem (\texttt  {ddp\_overlap\_individual\_parameters\_benchmarking})}{9}{subsection.4.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {5}Optimizer State Sharding}{10}{section.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Problem (\texttt  {optimizer\_state\_sharding\_accounting})}{10}{subsection.5.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {6}Fully-Sharded Data Parallel}{11}{section.6}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.1}Problem (\texttt  {fsdp\_accounting})}{11}{subsection.6.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {7}Analyzing Parallelism Strategies}{13}{section.7}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {7.1}Problem (\texttt  {alternate\_ring\_all\_reduce})}{13}{subsection.7.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {7.2}Problem (\texttt  {data\_parallel\_calcs})}{13}{subsection.7.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {7.3}Problem (\texttt  {fsdp\_calcs})}{13}{subsection.7.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {7.4}Problem (\texttt  {tp\_calcs})}{13}{subsection.7.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {7.5}Problem (\texttt  {fsdp\_tp\_calcs})}{13}{subsection.7.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {8}Leaderboard}{14}{section.8}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {8.1}Problem (\texttt  {leaderboard})}{14}{subsection.8.1}\protected@file@percent }
-\gdef \@abspage@last{14}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.5}Problem (\texttt  {memory\_profiling})}{6}{subsection.2.5}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Memory timeline for the XL forward-only profile without autocast.}}{6}{figure.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Memory timeline for the XL full training-step profile without autocast.}}{6}{figure.2}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {12}{\ignorespaces Peak memory usage by context length.}}{7}{table.12}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces XL model with context length 128 and batch size 1.}}{8}{figure.3}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces XL model with context length 2048 and batch size 1.}}{8}{figure.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {3}Single-GPU Memory}{9}{section.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Problem (\texttt  {gradient\_checkpointing})}{9}{subsection.3.1}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {13}{\ignorespaces Peak GPU memory for the XL model (batch=4, ctx=2048, FP32 train) under single-level gradient checkpointing.}}{10}{table.13}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {4}GPU Kernels: FlashAttention-2}{11}{section.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Problem (\texttt  {pytorch\_attention})}{11}{subsection.4.1}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {14}{\ignorespaces PyTorch attention benchmark results, batch size 8 and single-head attention.}}{11}{table.14}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {15}{\ignorespaces Smallest PyTorch attention configuration that ran out of memory.}}{11}{table.15}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Problem (\texttt  {torch\_compile})}{12}{subsection.4.2}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {16}{\ignorespaces Compiled versus uncompiled PyTorch attention, batch size 8 and single-head attention.}}{12}{table.16}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {17}{\ignorespaces Normal vs.\ \texttt  {torch.compile} timing by model size (ctx 512, batch 4, fp32, 15 warmup, 50 iters).}}{12}{table.17}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {18}{\ignorespaces Compile speedup relative to normal.}}{12}{table.18}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Problem (\texttt  {flash\_benchmarking})}{13}{subsection.4.3}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {19}{\ignorespaces BF16 FlashAttention benchmark timings.}}{13}{table.19}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {20}{\ignorespaces FP32 FlashAttention benchmark timings.}}{14}{table.20}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5}Distributed Data Parallel Training}{15}{section.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Problem (\texttt  {distributed\_communication\_single\_node})}{15}{subsection.5.1}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {21}{\ignorespaces All-reduce timing and effective bandwidth}}{15}{table.21}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Problem (\texttt  {naive\_ddp\_benchmarking})}{15}{subsection.5.2}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {22}{\ignorespaces Naive DDP benchmark for the XL model on 1 node $\times $ 2 GPUs.}}{15}{table.22}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Problem (\texttt  {minimal\_ddp\_flat\_benchmarking})}{15}{subsection.5.3}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {23}{\ignorespaces Flat-gradient DDP benchmark for the XL model on 1 node $\times $ 2 GPUs.}}{15}{table.23}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.4}Problem (\texttt  {ddp\_overlap\_individual\_parameters\_benchmarking})}{16}{subsection.5.4}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {24}{\ignorespaces Overlapped individual-parameter DDP benchmark for the XL model on 1 node $\times $ 2 GPUs.}}{16}{table.24}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Nsight Systems trace for DDP backward pass with no comms.}}{17}{figure.5}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces Nsight Systems trace for DDP backward pass with no comms.}}{17}{figure.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6}Optimizer State Sharding}{18}{section.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.1}Problem (\texttt  {optimizer\_state\_sharding\_accounting})}{18}{subsection.6.1}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {25}{\ignorespaces Optimizer state sharding memory usage for the XL model on 1 node $\times $ 2 GPUs.}}{18}{table.25}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {26}{\ignorespaces Optimizer state sharding timing for the XL model on 1 node $\times $ 2 GPUs.}}{18}{table.26}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {7}Fully-Sharded Data Parallel}{19}{section.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.1}Problem (\texttt  {fsdp\_accounting})}{19}{subsection.7.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces Nsight Systems trace for FSDP on the XL model with 2 GPUs.}}{19}{figure.7}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces Nsight Systems trace for FSDP for first two layers showing no overlaps.}}{20}{figure.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {8}Analyzing Parallelism Strategies}{21}{section.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.1}Problem (\texttt  {alternate\_ring\_all\_reduce})}{21}{subsection.8.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.2}Problem (\texttt  {data\_parallel\_calcs})}{21}{subsection.8.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.3}Problem (\texttt  {fsdp\_calcs})}{22}{subsection.8.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.4}Problem (\texttt  {tp\_calcs})}{24}{subsection.8.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.5}Problem (\texttt  {fsdp\_tp\_calcs})}{26}{subsection.8.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {9}Leaderboard}{29}{section.9}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {9.1}Problem (\texttt  {leaderboard})}{29}{subsection.9.1}\protected@file@percent }
+\gdef \@abspage@last{29}

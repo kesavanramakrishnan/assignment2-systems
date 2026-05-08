@@ -1,0 +1,3 @@
+size,optimizer,world_size,node_count,gpus_per_node,batch_per_rank,global_batch,ctx_length,warmup,iters,per_iter_ms,per_iter_std_ms,optim_step_mean_ms,optim_step_std_ms,mem_after_model_init_mib,mem_before_optim_step_mib,mem_after_optim_step_mib,peak_memory_mib
+xl,unsharded,2,1,2,1,2,512,5,10,401.5794725390151,0.3164761009128594,79.97539569623768,0.15308912974764857,13124.791015625,52149.1103515625,52149.1103515625,65145.1103515625
+xl,sharded,2,1,2,1,2,512,5,10,391.3789947750047,0.4335763494798128,69.6558983065188,0.051619963547836295,13124.791015625,39348.1220703125,39348.1220703125,52344.4658203125

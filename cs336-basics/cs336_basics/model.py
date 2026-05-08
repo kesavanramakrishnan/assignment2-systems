@@ -13,10 +13,17 @@ from einops import einsum, rearrange
 from jaxtyping import Bool, Float, Int
 from torch import Tensor
 import torch.cuda.nvtx as nvtx
+from torch.utils.checkpoint import checkpoint
 
 from cs336_basics.nn_utils import softmax
 
 logger = logging.getLogger(__name__)
+
+
+def run_group(group, x):
+    for layer in group:
+        x = layer(x)
+    return x
 
 
 class Linear(nn.Module):
@@ -214,6 +221,7 @@ class BasicsTransformerLM(nn.Module):
         )
         self.ln_final = RMSNorm(d_model)
         self.lm_head = Linear(d_model, vocab_size)
+        self.checkpoint_block_size = None
         # Tie the weights, since the paper mentions that "we share the same weight
         # matrix between the two embedding layers and the pre-softmax linear transformation"
         # self.lm_head.weight = self.token_embeddings.weight
@@ -248,10 +256,14 @@ class BasicsTransformerLM(nn.Module):
         # (batch size, sequence_length, d_model)
         # x = self.positional_encoder(embedded_tokens, positions)
         x = embedded_tokens
-
-        for layer in self.layers:
-            # (batch size, sequence_length, d_model)
-            x = layer(x)
+        if self.checkpoint_block_size is None:
+            for layer in self.layers:
+                # (batch size, sequence_length, d_model)
+                x = layer(x)
+        else:
+            for i in range(0, len(self.layers), self.checkpoint_block_size):
+                group = list(self.layers[i : i + self.checkpoint_block_size])
+                x = checkpoint(run_group, group, x, use_reentrant=False)
         # (batch size, sequence_length, d_model)
         x = self.ln_final(x)
         # (batch size, sequence_length, vocab_size)

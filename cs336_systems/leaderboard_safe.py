@@ -1,0 +1,132 @@
+from cs336_systems.modal_utils import app, build_image, secrets
+
+
+CTX = 32768
+VOCAB = 151936
+DMODEL = 4096
+DFF = 11008
+LAYERS = 34
+HEADS = 32
+BS = 2
+REP_MS = 2000
+WARMUP_MS = 500
+
+
+def fsdp_worker(rank, world_size, q):
+    import os
+    import time
+    import torch
+    import torch.distributed as dist
+    import triton.testing
+    from cs336_basics.model import BasicsTransformerLM
+    from cs336_basics.nn_utils import cross_entropy
+    from torch.optim import AdamW
+    import cs336_basics.model as basics_model
+    from cs336_systems.cutile_attention import CuTileFlashAttentionFunction
+    from cs336_systems.fsdp import FSDP
+
+    os.environ["MASTER_ADDR"] = "127.0.0.1"
+    os.environ["MASTER_PORT"] = "29501"
+    os.environ["RANK"] = str(rank)
+    os.environ["WORLD_SIZE"] = str(world_size)
+    os.environ["LOCAL_RANK"] = str(rank)
+
+    torch.cuda.set_device(rank)
+    dist.init_process_group("nccl", rank=rank, world_size=world_size)
+
+    def cutile_sdpa(Q, K, V, mask=None):
+        return CuTileFlashAttentionFunction.apply(Q.contiguous(), K.contiguous(), V.contiguous(), True)
+    basics_model.scaled_dot_product_attention = cutile_sdpa
+
+    torch.manual_seed(0)
+    device = torch.device(f"cuda:{rank}")
+    dtype = torch.bfloat16
+
+    if rank == 0:
+        print(f"world_size={world_size} dtype={dtype}", flush=True)
+
+    build_t0 = time.perf_counter()
+    model = BasicsTransformerLM(
+        vocab_size=VOCAB,
+        context_length=CTX,
+        d_model=DMODEL,
+        num_layers=LAYERS,
+        num_heads=HEADS,
+        d_ff=DFF,
+    ).to(device=device, dtype=dtype)
+    model.checkpoint_block_size = 4
+    model = FSDP(model, compute_dtype=None)
+    optimizer = AdamW(model.parameters(), fused=True)
+    elapsed_b = time.perf_counter() - build_t0
+
+    n_params = sum(p.numel() for p in model.parameters())
+    if rank == 0:
+        print(f"built FSDP model in {elapsed_b:.1f}s, shard params {n_params / 1e9:.2f}B", flush=True)
+
+    local_bs = BS // world_size
+    full_inputs = torch.randint(0, VOCAB, (BS, CTX), device=device)
+    full_targets = torch.randint(0, VOCAB, (BS, CTX), device=device)
+    inputs = full_inputs[rank * local_bs:(rank + 1) * local_bs]
+    targets = full_targets[rank * local_bs:(rank + 1) * local_bs]
+
+    def train_step():
+        optimizer.zero_grad(set_to_none=True)
+        logits = model(inputs)
+        loss = cross_entropy(logits.reshape(-1, VOCAB), targets.reshape(-1)).sum()
+        loss.backward()
+        model.grad_sync()
+        optimizer.step()
+
+    torch.cuda.reset_peak_memory_stats()
+    dist.barrier()
+    one_step_start = time.perf_counter()
+    train_step()
+    torch.cuda.synchronize()
+    dist.barrier()
+    elapsed_one = time.perf_counter() - one_step_start
+    eager_peak_gib = torch.cuda.max_memory_allocated() / 1024**3
+    if rank == 0:
+        print(f"one step: {elapsed_one * 1000:.1f} ms, peak mem {eager_peak_gib:.2f} GiB", flush=True)
+        print(f"benching rep={REP_MS}ms warmup={WARMUP_MS}ms", flush=True)
+    dist.barrier()
+
+    bench_t0 = time.perf_counter()
+    ms = triton.testing.do_bench(train_step, rep=REP_MS, warmup=WARMUP_MS)
+    bench_s = time.perf_counter() - bench_t0
+    peak_gib = torch.cuda.max_memory_allocated() / 1024**3
+
+    if rank == 0:
+        print(f"DONE: {ms:.2f} ms/step, peak mem {peak_gib:.2f} GiB, took {bench_s:.1f}s", flush=True)
+        q.put({
+            "median_step_ms": float(ms),
+            "peak_mem_gib": float(peak_gib),
+            "n_params_shard": int(n_params),
+            "build_seconds": float(elapsed_b),
+            "bench_wall_seconds": float(bench_s),
+            "one_step_ms": float(elapsed_one * 1000),
+        })
+
+    dist.barrier()
+    dist.destroy_process_group()
+
+
+@app.function(image=build_image(), gpu="B200:2", secrets=secrets(), timeout=1800)
+def bench_b200x2():
+    import torch.multiprocessing as mp
+    world_size = 2
+    ctx = mp.get_context("spawn")
+    q = ctx.Queue()
+    processes = []
+    for rank in range(world_size):
+        p = ctx.Process(target=fsdp_worker, args=(rank, world_size, q))
+        p.start()
+        processes.append(p)
+    for p in processes:
+        p.join()
+    return q.get()
+
+
+@app.local_entrypoint()
+def main():
+    result = bench_b200x2.remote()
+    print("got back:", result)

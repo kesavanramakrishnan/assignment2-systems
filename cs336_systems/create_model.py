@@ -69,7 +69,8 @@ def load_config(yaml_path: str):
 
 
 def build_model(
-    config: ModelConfig
+    config: ModelConfig,
+    checkpoint_block_size: int | None = None
 ):
     model = BasicsTransformerLM(
         vocab_size=10000,
@@ -79,13 +80,15 @@ def build_model(
         num_layers=config.num_layers,
         num_heads=config.num_heads
     )
+    model.checkpoint_block_size = checkpoint_block_size
     return model
 
 
 
 def create_model(
-    config
+    config,
+    checkpoint_block_size: int | None = None
 ):
-    return build_model(config)
+    return build_model(config, checkpoint_block_size=checkpoint_block_size)
 
 

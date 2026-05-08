@@ -27,6 +27,23 @@ zip -r "$output_file" . \
     -x '.venv/*' \
     -x '*.bin' \
     -x '*.pt' \
-    -x '*.pth'
+    -x '*.pth' \
+    -x 'checkpoint-output/*' \
+    -x 'sweep-results/*' \
+    -x 'memory-snapshots/*' \
+    -x 'nsys-output/*' \
+    -x 'data_tokenized/*' \
+    -x 'data_tokenizers/*' \
+    -x 'submission/*' \
+    -x 'timing_sweeps_csv/*' \
+    -x 'writeup/*' \
+    -x 'data-shard-outs/*' \ 
+    -x 'cs336_systems/scripts/test_attention.py' \
+    -x 'cs336_systems/scripts/run_flash_tests.py' \
+    -x 'cs336_systems/scripts/test_attention.py' \
+    -x 'cs336_systems/scripts/test_fused_ce.py' \
+    -x 'cs336_systems/model_configs/*' \
+    -x 'timing_sweeps_csv/*' \
+
 
 echo "All files have been compressed into $output_file"

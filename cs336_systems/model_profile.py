@@ -16,15 +16,15 @@ import os
 from pathlib import Path
 
 SIZES = {
-    "small":  ModelConfig(model_type="small",  d_model=768,  d_ff=3072,  num_layers=12, num_heads=12, vocab_size=10000, context_length=512),
+    # "small":  ModelConfig(model_type="small",  d_model=768,  d_ff=3072,  num_layers=12, num_heads=12, vocab_size=10000, context_length=512),
     # "medium": ModelConfig(model_type="medium", d_model=1024, d_ff=4096,  num_layers=24, num_heads=16, vocab_size=10000, context_length=512),
-    "large":  ModelConfig(model_type="large",  d_model=1280, d_ff=5120,  num_layers=36, num_heads=20, vocab_size=10000, context_length=512),
-    # "xl":     ModelConfig(model_type="xl",     d_model=2560, d_ff=10240, num_layers=32, num_heads=32, vocab_size=10000, context_length=512),
+    # "large":  ModelConfig(model_type="large",  d_model=1280, d_ff=5120,  num_layers=36, num_heads=20, vocab_size=10000, context_length=512),
+    "xl":     ModelConfig(model_type="xl",     d_model=2560, d_ff=10240, num_layers=32, num_heads=32, vocab_size=10000, context_length=512),
     # "10B":    ModelConfig(model_type="10B",    d_model=4608, d_ff=12288, num_layers=50, num_heads=36, vocab_size=10000, context_length=512),
 }
-CTX_LENS = [256, 1024, 2048]
+CTX_LENS = [128, 2048]
 
-DEFAULT_NSYS_FLAGS = ["--trace=cuda,nvtx", "--pytorch=functions-trace", "--force-overwrite=true"]
+DEFAULT_NSYS_FLAGS = ["--trace=cuda,nvtx", "--pytorch=functions-trace", "--force-overwrite=true", "--cuda-memory-usage=true"]
 
 
 
@@ -174,6 +174,9 @@ def profile_remote(mode, warmup, iters, batch, ctx_length, config, device, outpu
         *DEFAULT_NSYS_FLAGS,
         "-o", output_path,
         "--",
+        "env",
+        "PYTORCH_ALLOC_CONF=backend:cudaMallocAsync",
+        "PYTORCH_NO_CUDA_MEMORY_CACHING=1",
         "python", "-m", "cs336_systems.model_profile",
         "--config", config.model_type,
         "--mode", mode,

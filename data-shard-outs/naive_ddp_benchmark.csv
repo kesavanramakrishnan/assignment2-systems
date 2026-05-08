@@ -1,0 +1,2 @@
+size,world_size,node_count,gpus_per_node,batch_per_rank,global_batch,ctx_length,warmup,iters,step_mean_ms,step_std_ms,comm_mean_ms,comm_std_ms,comm_frac,peak_memory_mib
+xl,2,1,2,1,2,512,5,10,402.2424533031881,0.3767524971255532,36.13254360097926,0.20125684471930005,0.08982777253932606,52649.7978515625

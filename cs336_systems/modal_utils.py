@@ -30,6 +30,7 @@ def build_image(*, include_tests: bool = False) -> modal.Image:
             copy=True,
         )
         .uv_sync()
+        .run_commands("VIRTUAL_ENV=/.uv/.venv uv pip install 'cuda-tile[tileiras]'")
         .add_local_python_source("cs336_systems")
     )
     if include_tests:
